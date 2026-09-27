@@ -36,7 +36,7 @@ const QuickAdd = forwardRef(function QuickAdd({ teamMembers, modules, defaults, 
           ref={ref}
           value={draft}
           onChange={(e) => setDraft(e.target.value)}
-          placeholder="Ajouter un checkpoint…  @membre  #catégorie  !haute  30/09"
+          placeholder="Ajouter un checkpoint…"
           aria-label="Ajouter une tâche (saisie rapide)"
           aria-describedby="quick-add-preview"
           className="flex-1 min-w-0 bg-transparent outline-none text-sm text-primary placeholder:text-[var(--text-tertiary)] py-1.5"

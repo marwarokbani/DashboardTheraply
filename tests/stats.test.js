@@ -164,3 +164,21 @@ test('progression dans le temps : cumul des tâches créées et terminées', asy
   assert.deepEqual(points.map((p) => `${p.date}:${p.done}/${p.total}`), ['2026-09-24:0/2', '2026-09-25:1/3', '2026-09-26:2/3']);
   assert.equal(calcProgressOverTime([], { now: NOW }).hasData, false);
 });
+
+test('calendrier : tâche terminée au jour de fin, les autres à leur échéance', async () => {
+  const { calcTasksByDate } = await import('../src/utils/stats.js');
+  const tasks = [
+    { id: 'fini-tot', status: 'done', dueDate: '2026-09-25', completedAt: ts(9, 22) },
+    { id: 'a-faire', status: 'todo', dueDate: '2026-09-24', completedAt: null },
+    { id: 'sans-date-fin', status: 'done', dueDate: '2026-09-23', completedAt: null },
+    { id: 'fini-avant', status: 'done', dueDate: '2026-09-23', completedAt: ts(9, 18) },
+  ];
+  const week = calcTasksByDate(tasks, NOW);
+  const ids = (date) => week[date].map((t) => t.id);
+  assert.deepEqual(ids('2026-09-22'), ['fini-tot']);
+  assert.deepEqual(ids('2026-09-25'), []);
+  assert.deepEqual(ids('2026-09-24'), ['a-faire']);
+  assert.deepEqual(ids('2026-09-23'), ['sans-date-fin']);
+  // Terminée la semaine précédente : visible en reculant d'une semaine
+  assert.deepEqual(calcTasksByDate(tasks, NOW, -1)['2026-09-18'].map((t) => t.id), ['fini-avant']);
+});

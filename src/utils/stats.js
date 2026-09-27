@@ -381,12 +381,19 @@ export function calcWorkloadByMember(tasks = [], teamMembers = [], { unit = 'tas
 // Calendrier
 // ============================================
 
-/** Tâches groupées par échéance pour la semaine courante : { 'YYYY-MM-DD': [tâches] }. */
-export function calcTasksByDate(tasks = [], now = new Date()) {
-  const { start, end } = getWeekRange(now, 0);
+/**
+ * Tâches d'une semaine réparties par jour (lundi → dimanche) :
+ * une tâche terminée apparaît le jour où elle a été terminée (completedAt),
+ * les autres à leur échéance (dueDate).
+ * @param {number} weekOffset — 0 = semaine courante, -1 = précédente, 1 = suivante
+ * @returns {Object<string, Array>} { "YYYY-MM-DD": [tâches] }
+ */
+export function calcTasksByDate(tasks = [], now = new Date(), weekOffset = 0) {
+  const { start, end } = getWeekRange(now, weekOffset);
   const byDate = Object.fromEntries(eachDay(start, end).map((d) => [d, []]));
   tasks.forEach((task) => {
-    if (task.dueDate && byDate[task.dueDate]) byDate[task.dueDate].push(task);
+    const date = isDone(task) ? timestampToISODate(task.completedAt) || task.dueDate : task.dueDate;
+    if (date && byDate[date]) byDate[date].push(task);
   });
   return byDate;
 }
