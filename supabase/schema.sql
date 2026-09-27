@@ -11,6 +11,10 @@ create table if not exists public.dashboard_data (
 -- peuvent lire et modifier les données.
 alter table public.dashboard_data enable row level security;
 
+-- Accès via l'API (nécessaire si « Automatically expose new tables » est désactivé)
+revoke all on public.dashboard_data from anon;
+grant select, insert, update, delete on public.dashboard_data to authenticated;
+
 create policy "Lecture par les membres connectés" on public.dashboard_data
   for select to authenticated using (true);
 create policy "Création par les membres connectés" on public.dashboard_data
