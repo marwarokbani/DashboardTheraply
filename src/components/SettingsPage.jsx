@@ -41,7 +41,7 @@ export default function SettingsPage({ data, updateData, showToast, onReset, onE
         {activeTab === 'members' && <MembersSettings {...shared} />}
         {activeTab === 'modules' && <ModulesSettings {...shared} />}
         {activeTab === 'data' && (
-          <DataSettings data={data} updateData={updateData} onExport={onExport} onImport={onImport} onReset={onReset} onLoadDemo={onLoadDemo} />
+          <DataSettings data={data} onExport={onExport} onImport={onImport} onReset={onReset} onLoadDemo={onLoadDemo} />
         )}
       </div>
     </section>

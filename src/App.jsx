@@ -23,6 +23,7 @@ import Toast from './components/Toast';
 import TaskDrawer from './components/tasks/TaskDrawer';
 import ReportMenu from './components/dashboard/ReportMenu';
 import WeeklyReport from './components/dashboard/WeeklyReport';
+import { LoadingScreen } from './components/AuthGate';
 
 // Les graphiques (Recharts, lourd) sont chargés à la demande
 const StatisticsPage = lazy(() => import('./components/StatisticsPage'));
@@ -84,7 +85,7 @@ export default function App({ initialSection = 'tasks' }) {
 
   // ── Données, statistiques, actions ──
   const {
-    data, updateData, save, undo, canUndo, hasUnsavedChanges, lastSaved,
+    data, loading, updateData, save, undo, canUndo, hasUnsavedChanges, lastSaved,
     toast, showToast, exportData, importData, resetData, loadDemoData,
   } = useSaveData();
   const actions = useTaskActions(data, updateData, showToast);
@@ -149,6 +150,9 @@ export default function App({ initialSection = 'tasks' }) {
         return null;
     }
   };
+
+  // Attente de la version en ligne, pour ne jamais afficher (ni modifier) une copie périmée
+  if (loading) return <LoadingScreen />;
 
   return (
     <>

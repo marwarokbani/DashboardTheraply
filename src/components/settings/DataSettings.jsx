@@ -1,11 +1,12 @@
 /**
- * DataSettings — Sauvegarde automatique, export / import JSON,
+ * DataSettings — Emplacement des données, compte, export / import JSON,
  * données de démo et réinitialisation (double confirmation).
  */
 import { useRef, useState } from 'react';
-import { Download, RotateCcw, Upload, Sparkles } from 'lucide-react';
+import { Cloud, Download, HardDrive, LogOut, RotateCcw, Upload, Sparkles } from 'lucide-react';
+import { supabase } from '../../services/supabase';
 
-export default function DataSettings({ data, updateData, onExport, onImport, onReset, onLoadDemo }) {
+export default function DataSettings({ data, onExport, onImport, onReset, onLoadDemo }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const fileInputRef = useRef(null);
   const hasContent = data.tasks.length > 0 || data.sprints.length > 0;
@@ -19,24 +20,31 @@ export default function DataSettings({ data, updateData, onExport, onImport, onR
   };
 
   const handleDemo = () => {
-    if (hasContent && !confirm('Les données de démo remplaceront vos données actuelles (non enregistrées tant que vous ne sauvegardez pas). Continuer ?')) return;
+    if (hasContent && !confirm('Les données de démo remplaceront définitivement vos données actuelles. Pensez à exporter avant. Continuer ?')) return;
     onLoadDemo();
   };
 
-  const toggleAutoSave = (e) => {
-    const autoSave = e.target.checked;
-    updateData((prev) => ({ ...prev, settings: { ...prev.settings, autoSave } }), { history: false });
-  };
 
   return (
     <div className="space-y-3">
-      <label className="settings-row cursor-pointer">
+      <div className="settings-row">
+        {supabase ? <Cloud className="w-4 h-4 text-accent" aria-hidden /> : <HardDrive className="w-4 h-4 text-tertiary" aria-hidden />}
         <span className="flex-1">
-          <span className="block text-sm font-medium text-primary">Sauvegarde automatique</span>
-          <span className="block text-xs text-tertiary">Toutes les 2 minutes quand des modifications sont en attente</span>
+          <span className="block text-sm font-medium text-primary">
+            {supabase ? 'Enregistrement automatique en ligne' : 'Enregistrement automatique dans ce navigateur'}
+          </span>
+          <span className="block text-xs text-tertiary">
+            {supabase
+              ? 'Chaque modification est enregistrée sur le serveur et retrouvée sur tous vos appareils'
+              : 'Chaque modification est enregistrée, uniquement sur cet appareil'}
+          </span>
         </span>
-        <input type="checkbox" className="toggle" checked={data.settings.autoSave} onChange={toggleAutoSave} />
-      </label>
+        {supabase && (
+          <button type="button" className="btn btn-ghost" onClick={() => supabase.auth.signOut()}>
+            <LogOut className="w-4 h-4" aria-hidden /> Se déconnecter
+          </button>
+        )}
+      </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
         <button type="button" className="btn btn-secondary" onClick={onExport}>
