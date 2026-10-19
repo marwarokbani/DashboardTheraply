@@ -4,7 +4,9 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
 
-import { getCampaignState } from '../src/data/campaignData.js';
+import { CAMPAIGN_ID, getCampaignState, hasCampaign } from '../src/data/campaignData.js';
+import { getDemoState } from '../src/data/demoData.js';
+import { getEmptyState } from '../src/data/initialData.js';
 import { migratePayload } from '../src/data/migrations.js';
 import { calcOverdue, calcProgress, getScope } from '../src/utils/stats.js';
 
@@ -36,4 +38,12 @@ test('campagne : aucune tâche en retard au 19/10', () => {
   const { tasks } = getScope(getCampaignState(), 'all');
   assert.equal(calcOverdue(tasks, { now: NOW }).count, 0);
   assert.equal(calcProgress(tasks, { now: NOW }).percent, 90);
+});
+
+test('campagne : repère de chargement unique conservé par la migration', () => {
+  const campaign = getCampaignState();
+  assert.equal(campaign.settings.campaign, CAMPAIGN_ID);
+  assert.ok(hasCampaign(migratePayload({ version: 4, data: campaign }).data));
+  assert.equal(hasCampaign(getEmptyState()), false);
+  assert.equal(hasCampaign(getDemoState()), false);
 });

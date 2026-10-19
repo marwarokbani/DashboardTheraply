@@ -3,7 +3,8 @@
  *
  * Contenu tiré du document de synthèse de la campagne (DocTest.pdf) :
  * 11 phases, 157 cas de test, 97 exigences, 20 anomalies.
- * Chargée uniquement à la demande (Paramètres › Données › « Charger la campagne de test »).
+ * Chargée automatiquement une seule fois (repère `settings.campaign`), puis à la demande
+ * (Paramètres › Données › « Charger la campagne de test »).
  *
  * Rôles : Marwa, cheffe de projet & responsable des tests (stratégie, plan, Kiwi, MBT,
  * CI, tri des anomalies, bilan) ; Sahar, testeuse qualité du code (unitaire, TDD,
@@ -17,6 +18,14 @@ import { DEFAULT_MODULES, DEFAULT_SETTINGS, DEFAULT_TEAM_MEMBERS } from './initi
 
 /** Horodatage ISO d'un jour « YYYY-MM-DD » à une heure donnée, heure de Tunis (UTC+1). */
 const at = (date, hour) => new Date(`${date}T${String(hour).padStart(2, '0')}:00:00+01:00`).toISOString();
+
+/** Repère enregistré dans les réglages une fois la campagne chargée. */
+export const CAMPAIGN_ID = 'theraply-2026-09-15';
+
+/** true si ces données contiennent déjà la campagne (chargée automatiquement ou à la main). */
+export function hasCampaign(data) {
+  return data?.settings?.campaign === CAMPAIGN_ID;
+}
 
 const M = 'marwa';
 const S = 'sahar';
@@ -252,6 +261,6 @@ export function getCampaignState() {
     sprints: [],
     teamMembers: DEFAULT_TEAM_MEMBERS.map((m) => ({ ...m })),
     modules: DEFAULT_MODULES.map((m) => ({ ...m })),
-    settings: { ...DEFAULT_SETTINGS },
+    settings: { ...DEFAULT_SETTINGS, campaign: CAMPAIGN_ID },
   };
 }

@@ -19,7 +19,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DATA_VERSION, getEmptyState } from '../data/initialData';
 import { getDemoState } from '../data/demoData';
-import { getCampaignState } from '../data/campaignData';
+import { getCampaignState, hasCampaign } from '../data/campaignData';
 import { migratePayload } from '../data/migrations';
 import { applyTaskRules } from '../utils/tasks';
 import { todayISO } from '../utils/dates';
@@ -238,14 +238,15 @@ export function useSaveData({ local = localStorageAdapter, remote = supabaseAdap
    * Récupère la version en ligne si elle est plus récente que la version affichée.
    * Si rien n'existe en ligne, y envoie les données locales (premier lancement).
    * @param {{ initial?: boolean }} options — initial : aucune modification n'a encore pu être faite
+   * @returns {Promise<boolean>} false si le serveur n'a pas pu être lu
    */
   const pullRemote = useCallback(async ({ initial = false } = {}) => {
-    if (!remote) return;
+    if (!remote) return true;
     try {
       const payload = await remote.load();
       if (!payload?.data) {
         if (dataRef.current.tasks.length > 0 || unsavedRef.current) await save({ silent: true });
-        return;
+        return true;
       }
       let localPayload = null;
       try {
@@ -269,24 +270,43 @@ export function useSaveData({ local = localStorageAdapter, remote = supabaseAdap
         // Modifications faites hors ligne sur cet appareil : on les envoie
         await save({ silent: true });
       }
+      return true;
     } catch (error) {
       console.error('Erreur lors du chargement en ligne :', error);
       showToast('Impossible de joindre le serveur : affichage de la copie locale.', 'error');
+      return false;
     }
   }, [local, remote, save, showToast, resetHistory]);
 
-  // Chargement initial depuis le serveur
+  /**
+   * Campagne de test : remplace les données une seule fois (repère dans les réglages),
+   * puis l'enregistrement automatique l'envoie en ligne.
+   */
+  const ensureCampaign = useCallback(() => {
+    if (hasCampaign(dataRef.current)) return;
+    replaceData(getCampaignState());
+    showToast('Campagne de test chargée (15 sept. → 15 oct.)');
+  }, [replaceData, showToast]);
+
+  // Sans serveur : la campagne est chargée dès le premier rendu
+  useEffect(() => {
+    if (!remote) ensureCampaign();
+  }, [remote, ensureCampaign]);
+
+  // Chargement initial depuis le serveur (la campagne n'est chargée que si la lecture a réussi)
   useEffect(() => {
     if (!remote) return undefined;
     let cancelled = false;
     (async () => {
-      await pullRemote({ initial: true });
-      if (!cancelled) setLoading(false);
+      const ok = await pullRemote({ initial: true });
+      if (cancelled) return;
+      if (ok) ensureCampaign();
+      setLoading(false);
     })();
     return () => {
       cancelled = true;
     };
-  }, [remote, pullRemote]);
+  }, [remote, pullRemote, ensureCampaign]);
 
   // Retour sur l'onglet : récupère les modifications faites ailleurs (autre appareil, équipe)
   useEffect(() => {
