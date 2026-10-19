@@ -13,8 +13,8 @@
 
 import { STATUSES, PRIORITY_IDS } from '../data/initialData.js';
 import {
-  addDays, diffDays, eachDay, formatDateShort, getWeekRange, isTimestampInRange,
-  timestampToISODate, todayISO,
+  addDays, diffDays, eachDay, formatDateShort, getWeekRange, getWeekStart, isTimestampInRange,
+  parseISODate, timestampToISODate, todayISO,
 } from './dates.js';
 import { isDone, isOverdue, taskWeight } from './tasks.js';
 import { computeSprintSnapshot, getActiveSprint, getClosedSprints, getSprintTasks } from './sprints.js';
@@ -392,10 +392,67 @@ export function calcTasksByDate(tasks = [], now = new Date(), weekOffset = 0) {
   const { start, end } = getWeekRange(now, weekOffset);
   const byDate = Object.fromEntries(eachDay(start, end).map((d) => [d, []]));
   tasks.forEach((task) => {
-    const date = isDone(task) ? timestampToISODate(task.completedAt) || task.dueDate : task.dueDate;
+    const date = calendarDate(task);
     if (date && byDate[date]) byDate[date].push(task);
   });
   return byDate;
+}
+
+/**
+ * Date de fin du projet : jour de la dernière tâche terminée, si toutes le sont.
+ * @returns {string|null} « YYYY-MM-DD », ou null s'il reste des tâches (ou aucune tâche)
+ */
+export function calcFinishedOn(tasks = []) {
+  if (tasks.length === 0 || !tasks.every(isDone)) return null;
+  const dates = tasks.map((t) => timestampToISODate(t.completedAt)).filter(Boolean).sort();
+  return dates.at(-1) || null;
+}
+
+/** Jour où une tâche apparaît au calendrier : fin réelle si terminée, sinon échéance. */
+function calendarDate(task) {
+  return isDone(task) ? timestampToISODate(task.completedAt) || task.dueDate : task.dueDate;
+}
+
+/**
+ * Vue « période du projet » : toutes les semaines entre la première et la
+ * dernière tâche datée, jour par jour. Le week-end n'est affiché que s'il
+ * contient au moins une tâche.
+ * @returns {{ hasData: boolean, start?: string, end?: string, workingDays?: number, showWeekend?: boolean,
+ *   weeks?: Array<{ number: number, start: string, end: string, modules: string[], taskCount: number,
+ *   days: Array<{ date: string, inPeriod: boolean, tasks: Array }> }> }}
+ */
+export function calcProjectCalendar(tasks = []) {
+  const dated = tasks.map((task) => ({ task, date: calendarDate(task) })).filter((x) => x.date);
+  if (dated.length === 0) return { hasData: false };
+
+  const dates = dated.map((x) => x.date).sort();
+  const start = dates[0];
+  const end = dates[dates.length - 1];
+  const byDate = new Map();
+  dated.forEach(({ task, date }) => byDate.set(date, [...(byDate.get(date) || []), task]));
+  const isWeekend = (date) => [0, 6].includes(parseISODate(date).getDay());
+  const showWeekend = dates.some(isWeekend);
+
+  const weeks = [];
+  for (let monday = getWeekStart(start); monday <= end; monday = addDays(monday, 7)) {
+    const days = eachDay(monday, addDays(monday, 6))
+      .filter((date) => showWeekend || !isWeekend(date))
+      .map((date) => ({ date, inPeriod: date >= start && date <= end, tasks: byDate.get(date) || [] }));
+    const weekTasks = days.flatMap((d) => d.tasks);
+    const modules = [...new Set(weekTasks.map((t) => t.module).filter(Boolean))];
+    const inPeriod = days.filter((d) => d.inPeriod);
+    weeks.push({
+      number: weeks.length + 1,
+      start: inPeriod[0].date,
+      end: inPeriod[inPeriod.length - 1].date,
+      modules,
+      taskCount: weekTasks.length,
+      days,
+    });
+  }
+
+  const workingDays = eachDay(start, end).filter((date) => !isWeekend(date)).length;
+  return { hasData: true, start, end, workingDays, showWeekend, weeks };
 }
 
 // ============================================

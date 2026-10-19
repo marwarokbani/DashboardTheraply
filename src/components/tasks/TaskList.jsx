@@ -34,8 +34,8 @@ function SortHeader({ column, sort, onSort }) {
   );
 }
 
-export default function TaskList({ tasks, teamMembers, modules, actions }) {
-  const [sort, setSort] = useState({ key: 'priority', direction: 'asc' });
+export default function TaskList({ tasks, teamMembers, modules, actions, defaultSort = 'priority' }) {
+  const [sort, setSort] = useState({ key: defaultSort, direction: 'asc' });
   const [selectedIds, setSelectedIds] = useState(() => new Set());
 
   // La sélection ne garde que les tâches encore visibles (filtres, suppressions…)
@@ -93,7 +93,7 @@ export default function TaskList({ tasks, teamMembers, modules, actions }) {
                       <Checkbox checked={done} onChange={() => actions.toggleDone(task.id)} label={done ? 'Marquer comme à faire' : 'Marquer comme terminée'} size="sm" />
                       <button
                         type="button"
-                        className={`truncate text-left cursor-pointer hover:underline underline-offset-2 ${done ? 'line-through text-tertiary' : 'text-primary'}`}
+                        className={`truncate text-left cursor-pointer hover:underline underline-offset-2 ${done ? 'text-secondary' : 'text-primary'}`}
                         onClick={(e) => { e.stopPropagation(); actions.onOpen(task.id); }}
                       >
                         {task.title}

@@ -11,7 +11,7 @@ import { useMemo } from 'react';
 import {
   getScope, calcProgress, calcCompletedThisWeek, calcOverdue, calcDueSoon, getTodayFocus,
   calcSprintTimeline, calcStatusDistribution, calcModuleProgress, calcWorkloadByMember,
-  calcProgressOverTime,
+  calcProgressOverTime, calcFinishedOn,
 } from '../utils/stats';
 
 export function useDashboardStats(data, { scope = 'all' } = {}) {
@@ -34,10 +34,12 @@ export function useDashboardStats(data, { scope = 'all' } = {}) {
           count: tasks.filter((t) => t.status !== 'done').length,
           inProgress: tasks.filter((t) => t.status === 'in-progress' || t.status === 'in-review').length,
         },
+        finishedOn: calcFinishedOn(tasks),
       },
       dueSoon: calcDueSoon(tasks, { now }),
       todayFocus: getTodayFocus(tasks, { now }),
-      progressOverTime: calcProgressOverTime(tasks, { now }),
+      // Jusqu'à 90 jours : toute la période du projet reste visible après sa fin
+      progressOverTime: calcProgressOverTime(tasks, { days: 90, now }),
       statusDistribution: calcStatusDistribution(tasks, { unit }),
       moduleProgress: calcModuleProgress(data.modules, { tasks, unit }),
       workload: calcWorkloadByMember(tasks, data.teamMembers, { unit, now }),

@@ -3,7 +3,7 @@
  * par rapport à la semaine précédente.
  */
 import { AlertTriangle, CalendarClock, CheckCircle2, ListTodo, Target, TrendingDown, TrendingUp, Minus } from 'lucide-react';
-import { formatDateShort } from '../../utils/dates';
+import { formatDateMedium, formatDateShort } from '../../utils/dates';
 
 /**
  * Badge de tendance.
@@ -46,7 +46,7 @@ function KpiCard({ icon: Icon, label, value, detail, trend, tone }) {
 }
 
 export default function KpiCards({ kpis, scope, unit }) {
-  const { progress, completedThisWeek, overdue, timeline, remaining } = kpis;
+  const { progress, completedThisWeek, overdue, timeline, remaining, finishedOn } = kpis;
   const unitWord = unit === 'points' ? 'pts' : 'tâches';
   const sprint = scope.sprint;
 
@@ -63,6 +63,14 @@ export default function KpiCards({ kpis, scope, unit }) {
         detail={progress.total > 0 ? `${progress.done}/${progress.total} ${unitWord}` : 'aucune tâche'}
         trend={progress.trend && <Trend delta={progress.trend.delta} percent={null} suffix=" pts" />}
       />
+      {finishedOn && completedThisWeek.count === 0 ? (
+        <KpiCard
+          icon={CheckCircle2}
+          label="Projet terminé le"
+          value={formatDateMedium(finishedOn)}
+          detail={`${progress.done} ${unitWord} validées`}
+        />
+      ) : (
       <KpiCard
         icon={CheckCircle2}
         label="Terminées cette semaine"
@@ -72,6 +80,7 @@ export default function KpiCards({ kpis, scope, unit }) {
           <Trend delta={completedThisWeek.trend.delta} percent={completedThisWeek.trend.percent} />
         )}
       />
+      )}
       <KpiCard
         icon={AlertTriangle}
         label="En retard"

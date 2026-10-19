@@ -36,7 +36,7 @@ export default function ProgressOverTimeChart({ progress, className }) {
             <YAxis {...AXIS_PROPS} allowDecimals={false} width={40} />
             <Tooltip content={<ChartTooltip />} cursor={{ stroke: 'var(--border-strong)' }} />
             <Line type="stepAfter" dataKey="total" name="Total" stroke="var(--text-tertiary)" strokeWidth={1.5} strokeDasharray="4 4" dot={false} isAnimationActive={false} />
-            <Area type="stepAfter" dataKey="done" name="Validés" stroke="var(--status-done)" strokeWidth={2} fill="url(#done-fill)" dot={false} activeDot={{ r: 4 }} />
+            <Area type="stepAfter" dataKey="done" name="Validés" stroke="var(--status-done)" strokeWidth={2} fill="url(#done-fill)" dot={false} activeDot={{ r: 4 }} isAnimationActive={false} />
           </ComposedChart>
         </ResponsiveContainer>
       </div>

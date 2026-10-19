@@ -14,18 +14,22 @@ import { getActiveSprint } from '../utils/sprints';
 
 const VIEW_KEY = 'theraply-task-view';
 
-/** Vue mémorisée pour ce navigateur (confort uniquement). */
+/** Vue mémorisée pour ce navigateur (confort uniquement), ou null si jamais choisie. */
 function readStoredView() {
   try {
-    return localStorage.getItem(VIEW_KEY) === 'list' ? 'list' : 'kanban';
+    const stored = localStorage.getItem(VIEW_KEY);
+    return stored === 'list' || stored === 'kanban' ? stored : null;
   } catch {
-    return 'kanban';
+    return null;
   }
 }
 
 export default function TasksSection({ data, tasks, actions, onOpenTask }) {
   const [filters, setFilters] = useState(EMPTY_FILTERS);
-  const [view, setView] = useState(readStoredView);
+  const allDone = tasks.length > 0 && tasks.every((t) => t.status === 'done');
+  const [chosenView, setView] = useState(readStoredView);
+  // Sans choix mémorisé : liste si tout est terminé (un Kanban n'aurait qu'une colonne remplie)
+  const view = chosenView || (allDone ? 'list' : 'kanban');
   const visible = useMemo(() => filterTasks(tasks, filters), [tasks, filters]);
   const activeSprint = getActiveSprint(data.sprints);
 
@@ -94,7 +98,7 @@ export default function TasksSection({ data, tasks, actions, onOpenTask }) {
           onAddInColumn={add}
         />
       ) : (
-        <TaskList tasks={visible} teamMembers={data.teamMembers} modules={data.modules} actions={viewActions} />
+        <TaskList tasks={visible} teamMembers={data.teamMembers} modules={data.modules} actions={viewActions} defaultSort={allDone ? 'dueDate' : 'priority'} />
       )}
     </section>
   );

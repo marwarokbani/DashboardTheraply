@@ -429,7 +429,7 @@ kbd {
 }
 .task-card:hover { border-color: var(--border-strong); box-shadow: var(--shadow-md); }
 .task-card-title { font-size: 0.8125rem; line-height: 1.25rem; font-weight: 500; color: var(--text-primary); overflow-wrap: anywhere; }
-.task-card.is-done .task-card-title { color: var(--text-tertiary); text-decoration: line-through; }
+.task-card.is-done .task-card-title { color: var(--text-secondary); }
 .task-card.is-dragging { opacity: 0.35; }
 .task-card.is-overlay { cursor: grabbing; box-shadow: var(--shadow-lg); transform: rotate(1.5deg); border-color: var(--accent); }
 
