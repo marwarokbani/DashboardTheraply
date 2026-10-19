@@ -86,7 +86,7 @@ export default function App({ initialSection = 'tasks' }) {
   // ── Données, statistiques, actions ──
   const {
     data, loading, updateData, save, undo, canUndo, hasUnsavedChanges, lastSaved,
-    toast, showToast, exportData, importData, resetData, loadDemoData,
+    toast, showToast, exportData, importData, resetData, loadDemoData, loadCampaignData,
   } = useSaveData();
   const actions = useTaskActions(data, updateData, showToast);
   const stats = useDashboardStats(data);
@@ -144,6 +144,7 @@ export default function App({ initialSection = 'tasks' }) {
             onExport={exportData}
             onImport={importData}
             onLoadDemo={loadDemoData}
+            onLoadCampaign={loadCampaignData}
           />
         );
       default:

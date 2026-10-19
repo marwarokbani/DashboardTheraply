@@ -19,6 +19,7 @@
 import { useState, useEffect, useCallback, useRef } from 'react';
 import { DATA_VERSION, getEmptyState } from '../data/initialData';
 import { getDemoState } from '../data/demoData';
+import { getCampaignState } from '../data/campaignData';
 import { migratePayload } from '../data/migrations';
 import { applyTaskRules } from '../utils/tasks';
 import { todayISO } from '../utils/dates';
@@ -390,6 +391,12 @@ export function useSaveData({ local = localStorageAdapter, remote = supabaseAdap
     showToast('Données de démo chargées', 'info');
   }, [replaceData, showToast]);
 
+  /** Charge la campagne de test Theraply (15 sept. → 15 oct.), enregistrée comme toute modification. */
+  const loadCampaignData = useCallback(() => {
+    replaceData(getCampaignState());
+    showToast('Campagne de test chargée');
+  }, [replaceData, showToast]);
+
   // Nettoyage du minuteur de toast au démontage
   useEffect(() => () => clearTimeout(toastTimerRef.current), []);
 
@@ -408,5 +415,6 @@ export function useSaveData({ local = localStorageAdapter, remote = supabaseAdap
     importData,
     resetData,
     loadDemoData,
+    loadCampaignData,
   };
 }

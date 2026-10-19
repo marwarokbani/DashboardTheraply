@@ -41,8 +41,8 @@ export const PRIORITY_IDS = PRIORITIES.map((p) => p.id);
 // ============================================
 
 export const DEFAULT_TEAM_MEMBERS = [
-  { id: 'marwa', name: 'Marwa', role: 'Cheffe de projet & Dev', color: '#7c3aed' },
-  { id: 'sahar', name: 'Sahar', role: 'Développeuse', color: '#0284c7' },
+  { id: 'marwa', name: 'Marwa', role: 'Cheffe de projet & responsable des tests', color: '#7c3aed' },
+  { id: 'sahar', name: 'Sahar', role: 'Testeuse qualité du code', color: '#0284c7' },
 ];
 
 /** Catégories par défaut : phases du processus de test ISTQB (éditables). */

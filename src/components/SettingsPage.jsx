@@ -13,7 +13,7 @@ const TABS = [
   { id: 'data', label: 'Données', icon: Database },
 ];
 
-export default function SettingsPage({ data, updateData, showToast, onReset, onExport, onImport, onLoadDemo }) {
+export default function SettingsPage({ data, updateData, showToast, onReset, onExport, onImport, onLoadDemo, onLoadCampaign }) {
   const [activeTab, setActiveTab] = useState('members');
   const shared = { data, updateData, showToast };
 
@@ -41,7 +41,7 @@ export default function SettingsPage({ data, updateData, showToast, onReset, onE
         {activeTab === 'members' && <MembersSettings {...shared} />}
         {activeTab === 'modules' && <ModulesSettings {...shared} />}
         {activeTab === 'data' && (
-          <DataSettings data={data} onExport={onExport} onImport={onImport} onReset={onReset} onLoadDemo={onLoadDemo} />
+          <DataSettings data={data} onExport={onExport} onImport={onImport} onReset={onReset} onLoadDemo={onLoadDemo} onLoadCampaign={onLoadCampaign} />
         )}
       </div>
     </section>

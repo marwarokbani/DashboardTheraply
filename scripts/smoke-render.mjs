@@ -3,7 +3,7 @@
  * (sans navigateur) pour détecter les erreurs d'exécution.
  *
  * Usage : node scripts/smoke-render.mjs
- * Scénarios : espace vide, données de démo, ancienne sauvegarde v1.
+ * Scénarios : espace vide, données de démo, campagne de test, ancienne sauvegarde v1.
  */
 import { createServer } from 'vite';
 import React from 'react';
@@ -26,12 +26,14 @@ globalThis.document = { documentElement: { classList: { toggle() {} } } };
 
 const server = await createServer({ server: { middlewareMode: true }, appType: 'custom', logLevel: 'error' });
 const { getDemoState } = await server.ssrLoadModule('/src/data/demoData.js');
+const { getCampaignState } = await server.ssrLoadModule('/src/data/campaignData.js');
 
 // Chaque page est rendue en passant la section de départ à App (initialSection)
 const pages = ['tasks', 'calendar', 'stats', 'settings'];
 const scenarios = {
   vide: null,
   demo: { version: 4, lastSaved: new Date().toISOString(), data: getDemoState() },
+  campagne: { version: 4, lastSaved: new Date().toISOString(), data: getCampaignState() },
   v1: {
     lastSaved: new Date().toISOString(),
     data: { tasks: [{ id: 't1', title: 'Ancienne tâche', assignee: 'marwa', module: 'patient', priority: 'haute', deadline: 'Lundi', status: 'done' }] },
@@ -48,10 +50,10 @@ for (const [name, payload] of Object.entries(scenarios)) {
     const { default: App } = await server.ssrLoadModule('/src/App.jsx');
     try {
       const html = renderToString(React.createElement(App, { initialSection: page }));
-      console.log(`ok   ${name.padEnd(5)} ${page.padEnd(10)} ${html.length} caractères`);
+      console.log(`ok   ${name.padEnd(8)} ${page.padEnd(10)} ${html.length} caractères`);
     } catch (error) {
       failures++;
-      console.error(`FAIL ${name.padEnd(5)} ${page.padEnd(10)} ${error.message}`);
+      console.error(`FAIL ${name.padEnd(8)} ${page.padEnd(10)} ${error.message}`);
       console.error(error.stack.split('\n').slice(0, 4).join('\n'));
     }
   }

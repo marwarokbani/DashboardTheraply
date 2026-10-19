@@ -3,10 +3,10 @@
  * données de démo et réinitialisation (double confirmation).
  */
 import { useRef, useState } from 'react';
-import { Cloud, Download, HardDrive, LogOut, RotateCcw, Upload, Sparkles } from 'lucide-react';
+import { ClipboardCheck, Cloud, Download, HardDrive, LogOut, RotateCcw, Upload, Sparkles } from 'lucide-react';
 import { supabase } from '../../services/supabase';
 
-export default function DataSettings({ data, onExport, onImport, onReset, onLoadDemo }) {
+export default function DataSettings({ data, onExport, onImport, onReset, onLoadDemo, onLoadCampaign }) {
   const [confirmReset, setConfirmReset] = useState(false);
   const fileInputRef = useRef(null);
   const hasContent = data.tasks.length > 0 || data.sprints.length > 0;
@@ -22,6 +22,11 @@ export default function DataSettings({ data, onExport, onImport, onReset, onLoad
   const handleDemo = () => {
     if (hasContent && !confirm('Les données de démo remplaceront définitivement vos données actuelles. Pensez à exporter avant. Continuer ?')) return;
     onLoadDemo();
+  };
+
+  const handleCampaign = () => {
+    if (hasContent && !confirm('La campagne de test remplacera définitivement vos données actuelles. Pensez à exporter avant. Continuer ?')) return;
+    onLoadCampaign();
   };
 
 
@@ -55,6 +60,10 @@ export default function DataSettings({ data, onExport, onImport, onReset, onLoad
         </button>
         <input ref={fileInputRef} type="file" accept="application/json,.json" className="hidden" onChange={handleImport} />
       </div>
+
+      <button type="button" className="btn btn-primary w-full" onClick={handleCampaign}>
+        <ClipboardCheck className="w-4 h-4" /> Charger la campagne de test (15 sept. → 15 oct.)
+      </button>
 
       <button type="button" className="btn btn-secondary w-full" onClick={handleDemo}>
         <Sparkles className="w-4 h-4" /> Charger des données de démo
